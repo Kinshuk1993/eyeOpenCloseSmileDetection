@@ -50,29 +50,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class EyesTracker extends Tracker<Face> {
+    private class EyesSmileTracker extends Tracker<Face> {
 
-        private final float THRESHOLD = 0.75f;
+        // minimum threshold value to detect open eyes and smile
+        private final float THRESHOLD = 0.80f;
+        // default constructor
+        private EyesSmileTracker() {}
 
-        private EyesTracker() {
-
-        }
-
+        /**
+         * Function to detect open eyes
+         * and smile
+         * @param detections
+         * @param face
+         */
         @Override
         public void onUpdate(Detector.Detections<Face> detections, Face face) {
-            if ((face.getIsLeftEyeOpenProbability() > THRESHOLD || face.getIsRightEyeOpenProbability() > THRESHOLD) && face.getIsSmilingProbability() > 0.5) {
-                Log.i(TAG, "onUpdate: Eyes Detected");
+            // check for both open eyes and smile
+            if ((face.getIsLeftEyeOpenProbability() > THRESHOLD || face.getIsRightEyeOpenProbability() > THRESHOLD) && face.getIsSmilingProbability() > THRESHOLD) {
+                // log the action
+                Log.i(TAG, "Open eyes with smile detected");
+                // update UI
                 showStatus("Open eyes and smile detected, so video continues");
+                // if video is paused, play the video
                 if (!videoView.isPlaying())
                     videoView.start();
             }
-            else if ((face.getIsLeftEyeOpenProbability() > THRESHOLD || face.getIsRightEyeOpenProbability() > THRESHOLD) && face.getIsSmilingProbability() < 0.5) {
-                if (videoView.isPlaying())
+            // check for both open eyes and no smile
+            else if ((face.getIsLeftEyeOpenProbability() > THRESHOLD || face.getIsRightEyeOpenProbability() > THRESHOLD) && face.getIsSmilingProbability() < THRESHOLD) {
+                // if video is playing, pause it
+                if (videoView.isPlaying()){
                     videoView.pause();
+                }
+                //update the UI
                 showStatus("Please smile to resume video play");
-            } else {
-                if (videoView.isPlaying())
+            }
+            // for all other conditions
+            else {
+                //if video is playing, pause it
+                if (videoView.isPlaying()){
                     videoView.pause();
+                }
+                // update UI
                 showStatus("Closed eyes and/or no smile detected, Video pausing");
             }
         }
@@ -97,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Tracker<Face> create(Face face) {
-            return new EyesTracker();
+            return new EyesSmileTracker();
         }
     }
 
